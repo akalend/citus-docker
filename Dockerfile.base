@@ -1,0 +1,70 @@
+FROM ubuntu:22.04 AS base
+
+# environment is to make python pass an interactive shell, probably not the best timezone given a wide variety of colleagues
+ENV TZ=UTC
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+# install build tools
+RUN apt update && apt install -y \
+    bison \
+    bzip2 \
+    cpanminus \
+    curl \
+    docbook-xml \
+    docbook-xsl \
+    flex \
+    gcc \
+    git \
+    libcurl4-gnutls-dev \
+    libicu-dev \
+    libkrb5-dev \
+    liblz4-dev \
+    libpam0g-dev \
+    libreadline-dev \
+    libssl-dev \
+    libxml2-utils \
+    libxslt-dev \
+    libzstd-dev \
+    locales \
+    make \
+    perl \
+    pkg-config \
+    python3 \
+    python3-pip \
+    software-properties-common \
+    vim \
+    net-tools \
+    sudo \
+    zlib1g-dev \
+    autotools-dev \
+ && add-apt-repository ppa:deadsnakes/ppa -y \
+ && apt install -y \
+    python3.9-full \
+ # software properties pulls in pkexec, which makes the debugger unusable in vscode
+ && apt purge -y \
+    software-properties-common \
+ && apt autoremove -y \
+ && apt clean
+
+
+RUN cpanm install IPC::Run
+
+RUN locale-gen en_US.UTF-8
+
+# add the citus user to sudoers and allow all sudoers to login without a password prompt
+RUN useradd -ms /bin/bash citus \
+ && usermod -aG sudo citus \
+ && echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers && \
+ useradd postgres
+
+WORKDIR /home/citus
+USER citus
+
+# run all make commands with the number of cores available
+RUN echo "export MAKEFLAGS=\"-j \$(nproc)\"" >> "/home/citus/.bashrc"
+
+USER citus
+
+RUN git clone --branch REL_17_STABLE --depth 1 https://github.com/postgres/postgres.git && \
+     cd postgres && \
+     ./configure && make && sudo make install 
