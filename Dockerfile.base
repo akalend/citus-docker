@@ -34,6 +34,7 @@ RUN apt update && apt install -y \
     software-properties-common \
     vim \
     net-tools \
+    dh-autoreconf \
     sudo \
     zlib1g-dev \
     autotools-dev \
@@ -55,15 +56,13 @@ RUN locale-gen en_US.UTF-8
 RUN useradd -ms /bin/bash citus \
  && usermod -aG sudo citus \
  && echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers && \
- useradd postgres
+ useradd postgres && sudo usermod -aG sudo postgres
 
 WORKDIR /home/citus
 USER citus
 
 # run all make commands with the number of cores available
 RUN echo "export MAKEFLAGS=\"-j \$(nproc)\"" >> "/home/citus/.bashrc"
-
-USER citus
 
 RUN git clone --branch REL_17_STABLE --depth 1 https://github.com/postgres/postgres.git && \
      cd postgres && \

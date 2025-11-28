@@ -10,3 +10,16 @@
  -  Dockerfile.pg - базовый контейнер, который содержит утилиты и postgresql.
  -  Dockerfile  контейнер со сборкой citus
  -  cmd файл с полезными командами и шаблонами
+
+
+Создание base образа:
+
+    docker build -f Dockerfile.base -t postgres .
+
+Создание рабочего образа первичного узла :
+
+    docker build  -t citus .
+
+Создание рабочего образа вторичного узла :
+
+    docker build  -t citus .
