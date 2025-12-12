@@ -48,6 +48,18 @@ psql -h $IP_COORD -U postgres -c "SELECT citus_add_secondary_node('$IP_SW1', 543
 psql -h $IP_COORD -U postgres -c "SELECT citus_add_secondary_node('$IP_SW2', 5432,'$IP_W2', 5432)"
 
 
+psql -h $IP_COORD -U postgres -c "SELECT citus_health()"
+psql -h $IP_SCOORD -U postgres -c "SELECT citus_health()"
+
+psql -h $IP_W1 -U postgres -c "SELECT citus_health()"
+psql -h $IP_W2 -U postgres -c "SELECT citus_health()"
+psql -h $IP_SW2 -U postgres -c "SELECT citus_health()"
+psql -h $IP_SW1 -U postgres -c "SELECT citus_health()"
+
+
+
+
+
 
 docker inspect $(docker ps -q) --format='{{printf "%-30s" .Name}} {{range .NetworkSettings.Networks}}{{.IPAddress}} {{end}}' | sed 's/\///'
 
